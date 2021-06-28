@@ -1,0 +1,22 @@
+FROM node:alpine
+
+# RUN addgroup vite-react-firebase-auth-mongodb-nodejs-expressjs-docker-compose-fe && adduser -S -G vite-react-firebase-auth-mongodb-nodejs-expressjs-docker-compose-fe vite-react-firebase-auth-mongodb-nodejs-expressjs-docker-compose-fe
+# USER vite-react-firebase-auth-mongodb-nodejs-expressjs-docker-compose-fe
+
+WORKDIR /usr/vite-react-firebase-auth-mongodb-nodejs-expressjs-docker-compose-fe
+
+COPY package*.json ./
+RUN npm install -g npm@7.16.0
+ENV NODE_ENV=development
+RUN npm install 
+COPY ./ ./
+
+# ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
+# RUN chmod +x /wait
+
+# there are two stype of 
+# CMD npm start // shell form 
+# CMD ["npm", "start"] // exec form
+# ENTRYPOINT // both shell and exec form
+
+CMD ["npm", "start"]
