@@ -4,7 +4,7 @@ import { Modal, Input, Text, Button } from '@pancakeswap/uikit'
 import { useTranslation } from 'contexts/Localization'
 import { isEmail, isEmpty } from 'utils/form-validation'
 import useToast from 'hooks/useToast'
-import firebaseClient from 'firebaseClient/firebase'
+import { auth } from 'firebaseClient/firebase'
 
 const CellContainer = styled.div`
   display: flex;
@@ -46,8 +46,7 @@ export default function UserEdit({ onDismiss }) {
       toastWarning(t('Validation Error'), t('This doesn’t look like e-mail please check it again.'))
       return
     }
-    firebaseClient
-      .auth()
+    auth
       .sendPasswordResetEmail(userEmail)
       .then(() => {
         toastSuccess(t('Reset Password'), 'The email was sent successfully, Please check your email')

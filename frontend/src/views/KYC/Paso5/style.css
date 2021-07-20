@@ -1,0 +1,43 @@
+.thumbsContainer {
+    display: "flex";
+    flex-direction: "row";
+    flex-wrap: "wrap";
+    margin-top: 16;
+    padding: 20px;
+}
+
+.thumb {
+    position: "relative";
+    display: "inline-flex";
+    border-radius: 2px;
+    border: "1px solid #eaeaea";
+    margin-bottom: 8px;
+    margin-right: 8px;
+    width: 100px;
+    height: 100px;
+    padding: 4px;
+    box-sizing: "border-box"
+}
+
+.thumbInner {
+    display: "flex";
+    min-width: 0;
+    overflow: "hidden"
+}
+
+.img {
+    display: "block";
+    width: "auto";
+    height: "100%"
+}
+
+.thumbButton {
+    position: "absolute";
+    right: 10px;
+    bottom: 10px;
+    background: "rgba(0;0;0;.8)";
+    color: "#fff";
+    border: 0;
+    border-radius: ".325em";
+    cursor: "pointer"
+}

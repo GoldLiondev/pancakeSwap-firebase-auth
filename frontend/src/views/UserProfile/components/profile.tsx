@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
 import { ButtonMenu, ButtonMenuItem } from '@pancakeswap/uikit'
 import MyProfile from './MyProfile'
 import Password from './Password'
@@ -17,7 +16,6 @@ const MenuDiv = styled.div`
   padding-bottom: 20px;
 `
 const ProfileForm: React.FC = () => {
-  const { t } = useTranslation()
 
   // Users with no wallet connected should see 0 as Earned amount
   // Connected users should see loading indicator until first userData has loaded

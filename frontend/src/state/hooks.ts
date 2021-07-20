@@ -12,7 +12,6 @@ import { getBalanceAmount } from 'utils/formatBalance'
 import { BIG_ZERO } from 'utils/bigNumber'
 import useRefresh from 'hooks/useRefresh'
 import { filterFarmsByQuoteToken } from 'utils/farmsPriceHelpers'
-import { isEmpty } from 'utils/form-validation'
 import {
   fetchFarmsPublicDataAsync,
   fetchPoolsPublicDataAsync,
@@ -24,6 +23,7 @@ import {
   setAuth,
   setUserList,
   setUserProfile,
+  setKYC
 } from './actions'
 import { State, Farm, Pool, ProfileState, TeamsState, AchievementState, FarmsState, AuthState } from './types'
 import { fetchProfile } from './profile'
@@ -35,6 +35,7 @@ import { transformPool } from './pools/helpers'
 import { fetchPoolsStakingLimitsAsync } from './pools'
 import { fetchFarmUserDataAsync, nonArchivedFarms } from './farms'
 import { getUserList, getUserProfile } from '../action/users'
+import { getKYC } from '../action/kyc';
 
 // Auth
 
@@ -49,6 +50,29 @@ export const useAuth = (): AuthState => {
   const auth = useSelector((state: State) => state.auth)
   return auth
 }
+
+// KYC
+export const useSetKYC = (state) => {
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    getKYC(state).then((value) => {
+      if (value.success) dispatch(setKYC(value.data))
+    })
+  }, [dispatch, state])
+}
+
+export const useKYC = () => {
+  return useSelector((state: State) => state.KYC)
+}
+
+export const useDispatchSetKYC = (data) => {
+  const dispatch = useAppDispatch()
+  useEffect(() => {
+    dispatch(setKYC(data))
+  }, [dispatch, data])
+}
+
 // Profile
 
 export const useSetProfile = (state) => {

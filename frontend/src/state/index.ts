@@ -11,6 +11,7 @@ import collectiblesReducer from './collectibles'
 import authReducer from './auth'
 import userReducer from './usermanage'
 import userprofileReducer from './userProfile'
+import KYCReducer from './kyc'
 
 const store = configureStore({
   devTools: process.env.NODE_ENV !== 'production',
@@ -26,6 +27,7 @@ const store = configureStore({
     auth: authReducer,
     usermanage: userReducer,
     userProfile: userprofileReducer,
+    KYC: KYCReducer,
   },
 })
 

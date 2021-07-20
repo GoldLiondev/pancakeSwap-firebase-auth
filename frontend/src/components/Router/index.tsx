@@ -6,18 +6,19 @@ import { isEmpty } from 'utils/form-validation'
 
 export const PrivateRoute = ({ children, admin = false, ...rest }) => {
   const { isAuthenticated, userRole } = useAuth()
-  const localState = isEmpty(localStorage.getItem('auth_token'))
   if (admin && userRole !== 'admin') {
-    return (
-      <Route {...rest}>
-        <Redirect to="/" />
-      </Route>
-    )
+    return <Redirect to="/login" />
   }
   return (
-    <Route {...rest}>
-      {isAuthenticated || !localState ? <ViewContainer>{children}</ViewContainer> : <Redirect to="/login" />}
-    </Route>
+    <>
+      {isAuthenticated ? (
+        <Route {...rest}>
+          <ViewContainer>{children}</ViewContainer>
+        </Route>
+      ) : (
+        <Redirect to="/login" />
+      )}
+    </>
   )
 }
 

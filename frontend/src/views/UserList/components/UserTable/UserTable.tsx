@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
 import { Input } from '@pancakeswap/uikit'
 import Content from './Content'
 
@@ -46,9 +45,8 @@ const SearchContainer = styled.div`
     width: 30%;
   }
 `
-const UserTable: React.FC<ITableProps> = (props) => {
+const UserTable: React.FC<ITableProps> = () => {
   const tableWrapperEl = useRef<HTMLDivElement>(null)
-  const { t } = useTranslation()
   const [searchValue, setSearchValue] = useState('')
 
   return (

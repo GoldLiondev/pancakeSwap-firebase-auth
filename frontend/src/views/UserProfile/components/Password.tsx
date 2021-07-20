@@ -4,7 +4,7 @@ import { useTranslation } from 'contexts/Localization'
 import { Input, Text, Button } from '@pancakeswap/uikit'
 import useToast from 'hooks/useToast'
 import { minLength } from 'utils/form-validation'
-import firebaseClient from 'firebaseClient/firebase'
+import { auth } from 'firebaseClient/firebase'
 import { useAuth } from 'state/hooks'
 
 const Row = styled.div`
@@ -56,8 +56,7 @@ const PasswordRest: React.FC = () => {
       return
     }
 
-    firebaseClient
-      .auth()
+    auth
       .signInWithEmailAndPassword(userEmail, oldPassword)
       .then((firebase) => {
         firebase.user

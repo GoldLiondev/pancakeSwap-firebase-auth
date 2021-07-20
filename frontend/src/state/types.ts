@@ -8,11 +8,11 @@ export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, State, unknown
 export type TranslatableText =
   | string
   | {
-      key: string
-      data?: {
-        [key: string]: string | number
-      }
+    key: string
+    data?: {
+      [key: string]: string | number
     }
+  }
 
 export type SerializedBigNumber = string
 
@@ -276,6 +276,10 @@ export interface UserProfileState {
   profile: any
 }
 
+export interface KYCState {
+  kycData: any
+}
+
 // Global state
 
 export interface State {
@@ -290,4 +294,5 @@ export interface State {
   collectibles: CollectiblesState
   usermanage: UsersState
   userProfile: UserProfileState
+  KYC: KYCState
 }

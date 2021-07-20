@@ -6,7 +6,7 @@ import history from 'routerHistory'
 import { isEmail, maxLength, minLength, isEmpty } from 'utils/form-validation'
 import useToast from 'hooks/useToast'
 import { signUp } from 'action/auth'
-import firebaseClient from 'firebaseClient/firebase'
+import { auth } from 'firebaseClient/firebase'
 
 const FromDiv = styled.div`
   & > input {
@@ -51,12 +51,11 @@ const RegisterForm: React.FC = () => {
       return
     }
 
-    firebaseClient
-      .auth()
+    auth
       .createUserWithEmailAndPassword(email, password)
       .then(({ user }) => {
         user.sendEmailVerification()
-        signUp(email, name, password).then((data) => {
+        signUp(email, name).then((data) => {
           if (isEmpty(data.success)) return
           if (data.success) {
             toastSuccess(t('Register'), t('You are registered successfully.'))
@@ -66,8 +65,8 @@ const RegisterForm: React.FC = () => {
           }
         })
       })
-      .catch(() => {
-        toastWarning(t('Register Error'), 'There are some issuse for register')
+      .catch((err) => {
+        toastWarning(t('Register Error'), err.message)
       })
   }
   const handleChange = (type, value) => {

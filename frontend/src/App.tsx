@@ -1,12 +1,11 @@
-import React, { lazy } from 'react'
+import React, { lazy, useEffect, useState } from 'react'
 import { Router, Redirect, Switch } from 'react-router-dom'
 import { PrivateRoute, CommonRouter } from 'components/Router/index'
 import { ResetCSS } from '@pancakeswap/uikit'
-import jwt from 'jsonwebtoken'
 import SuspenseWithChunkError from 'components/SuspenseWithChunkError'
 import PageLoader from 'components/PageLoader'
 import BigNumber from 'bignumber.js'
-import { isEmpty } from 'utils/form-validation'
+import { auth } from 'firebaseClient/firebase'
 import Logout from 'components/Logout/logout'
 import setAuthToken from 'utils/setAuthToken'
 import { useSetAuth } from 'state/hooks'
@@ -32,6 +31,7 @@ const Team = lazy(() => import('./views/Teams/Team'))
 const TradingCompetition = lazy(() => import('./views/TradingCompetition'))
 const Predictions = lazy(() => import('./views/Predictions'))
 const UserList = lazy(() => import('./views/UserList'))
+const KYC = lazy(() => import('./views/KYC'))
 
 // This config is required for number formatting
 BigNumber.config({
@@ -40,14 +40,32 @@ BigNumber.config({
 })
 
 const App: React.FC = () => {
-  const token = localStorage.getItem('auth_token')
-  let userInfo = { useremail: '', userrole: '' }
-  if (!isEmpty(token)) {
-    const decode = jwt.decode(token)
-    setAuthToken(token)
-    const { useremail, userrole } = decode
-    userInfo = { useremail, userrole }
-  }
+  const [userInfo, setUserInfo] = useState({ useremail: '', userrole: '' })
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        await auth.currentUser
+          .getIdTokenResult()
+          .then((idTokenResult) => {
+            // Confirm the user is an Admin.
+            const { email, role } = idTokenResult.claims
+            setUserInfo({ useremail: email, userrole: role })
+            setAuthToken(idTokenResult.token)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+
+        //
+      } else {
+        auth.signOut()
+        setUserInfo({ useremail: '', userrole: '' })
+        await setAuthToken('')
+      }
+    })
+
+    return unsubscribe
+  }, [])
   useSetAuth(userInfo)
 
   return (
@@ -88,6 +106,9 @@ const App: React.FC = () => {
           </PrivateRoute>
           <PrivateRoute path="/teams/:id">
             <Team />
+          </PrivateRoute>
+          <PrivateRoute path="/submitKyc">
+            <KYC />
           </PrivateRoute>
           <PrivateRoute path="/profile">
             <Profile />

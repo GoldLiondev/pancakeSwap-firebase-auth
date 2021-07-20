@@ -1,14 +1,7 @@
 const firebaseAdmin = require("../firebase-admin");
-const firebaseClient = require("../firebase-client");
-
 const Users = require("../models/users");
 const Activity = require("../models/activity");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const validateRegisterInput = require("../validation/register");
-const validateLoginInput = require("../validation/login");
-const keys = require("../config/keys");
-const isEmpty = require("../utils/is-Empty");
 const UserController = (function () {
   const getUserList = async (req, res) => {
     Users.find()
@@ -28,6 +21,26 @@ const UserController = (function () {
     }
     try {
       const { username, useremail } = req.body;
+      let role = "user";
+      if (useremail && useremail == "test@gmail.com") {
+        role = "admin";
+      }
+      await firebaseAdmin
+        .auth()
+        .getUserByEmail(useremail)
+        .then((user) => {
+          const customClaims = {
+            role,
+          };
+          firebaseAdmin
+            .auth()
+            .setCustomUserClaims(user.uid, customClaims)
+            .then((result) => {});
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
       Users.findOne({ email: useremail })
         .then((user) => {
           if (user) {
@@ -38,6 +51,7 @@ const UserController = (function () {
             const newUser = new Users({
               name: username,
               email: useremail,
+              role,
             });
             newUser
               .save()
@@ -58,95 +72,66 @@ const UserController = (function () {
   };
 
   const login = async (req, res) => {
-    const { errors, isValid } = validateLoginInput(req.body);
-
-    // Check validation
-    if (!isValid) {
-      return res.status(400).send(errors);
-    }
-    const { useremail, password, ip, browser, os } = req.body;
-
-    // Find user by email
+    const { ip, browser, os, idToken } = req.body;
 
     // return res.send(firebaseClient);
 
-    firebaseClient
-      .auth()
-      .signInWithEmailAndPassword(useremail, password)
-      .then((userCredential) => {
-        const {
-          user: { emailVerified, refreshToken },
-        } = userCredential;
-        if (!emailVerified) {
-          return res
-            .status(400)
-            .send({ success: false, message: "Please verify your email." });
-        }
-        // Signed in
-        Users.findOne({ email: useremail }).then((user) => {
-          // Check if user exists
-          if (!user) {
-            return res
-              .status(404)
-              .send({ success: false, message: "Account not found." });
-          } else {
-            const newActivity = new Activity({
-              user_id: user._id,
-              device: os,
-              browser: browser,
-              ip: ip,
-            });
-            newActivity
-              .save()
-              .then()
-              .catch((err) => {
-                return res.status(400).send({
-                  success: false,
-                  message: "Thereis Some Issue",
-                });
-              });
-            user.email_verified_at = emailVerified;
-            user.lastLogin = Date.now();
-            user
-              .save()
-              .then((user) => {
-                if (!user.status) {
-                  return res.status(400).send({
-                    success: false,
-                    message: "Account was not actived.",
-                  });
-                }
-                const payload = {
-                  id: user._id,
-                  useremail: user.email,
-                  userrole: user.role,
-                };
-                jwt.sign(
-                  payload,
-                  keys.secretOrKey,
-                  {
-                    expiresIn: 3600,
-                  },
-                  (err, token) => {
-                    res.json({
-                      success: true,
-                      token: token,
-                      fireToken: refreshToken,
-                    });
-                  }
-                );
-              })
-              .catch((err) =>
-                res.status(400).json({ success: false, err: err })
-              );
-          }
+    const firebaseUser = await firebaseAdmin.auth().verifyIdToken(idToken);
+
+    const useremail = firebaseUser.email;
+
+    if (!firebaseUser.email_verified) {
+      return res
+        .status(400)
+        .send({ success: false, message: "Please verify your email." });
+    }
+
+    // Signed in
+    Users.findOne({ email: useremail }).then((user) => {
+      // Check if user exists
+      if (!user) {
+        return res
+          .status(404)
+          .send({ success: false, message: "Account not found." });
+      } else {
+        const newActivity = new Activity({
+          user_id: user._id,
+          device: os,
+          browser: browser,
+          ip: ip,
         });
-      })
-      .catch((error) => {
-        return res.status(400).json({ success: false, message: error.message });
-        // ..
-      });
-    return;
+        newActivity
+          .save()
+          .then()
+          .catch((err) => {
+            return res.status(400).send({
+              success: false,
+              message: "Thereis Some Issue",
+            });
+          });
+        user.email_verified_at = firebaseUser.email_verified;
+        user.lastLogin = Date.now();
+        user
+          .save()
+          .then((user) => {
+            if (!user.status) {
+              return res.status(400).send({
+                success: false,
+                message: "Account was not actived.",
+              });
+            }
+            const userData = {
+              useremail: user.email,
+              userrole: user.role,
+            };
+            res.json({
+              success: true,
+              userData: userData,
+            });
+          })
+          .catch((err) => res.status(400).json({ success: false, err: err }));
+      }
+    });
   };
   const deleteUser = async (req, res) => {
     const { email } = req.body;
@@ -172,14 +157,31 @@ const UserController = (function () {
   const updateUser = async (req, res) => {
     const { verKyc, role, status, userEmail } = req.body;
     Users.findOne({ email: userEmail })
-      .then((user) => {
+      .then(async (user) => {
         if (!user) {
           return res
             .status(400)
             .send({ success: false, message: "Email not found." });
         } else {
           user.kyc_verified_at = verKyc;
+
           user.role = role ? "admin" : "user";
+
+          await firebaseAdmin
+            .auth()
+            .getUserByEmail(userEmail)
+            .then((user) => {
+              const customClaims = role
+                ? {
+                    role: "admin",
+                  }
+                : { role: "user" };
+              firebaseAdmin.auth().setCustomUserClaims(user.uid, customClaims);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
           user.status = status;
           user
             .save()

@@ -2,9 +2,9 @@ import axios from 'axios'
 
 const SERVER_URL = 'http://localhost:3200'
 
-export const signUp = (useremail, username, password) => {
+export const signUp = (useremail, username) => {
   return axios
-    .post(`${SERVER_URL}/register`, { username, useremail, password })
+    .post(`${SERVER_URL}/register`, { username, useremail })
     .then((res) => {
       return res.data
     })
@@ -13,9 +13,9 @@ export const signUp = (useremail, username, password) => {
     })
 }
 
-export const signIn = (useremail, password, deviceInfo) =>
+export const signIn = (deviceInfo, idToken) =>
   axios
-    .post(`${SERVER_URL}/login`, { useremail, password, ...deviceInfo })
+    .post(`${SERVER_URL}/login`, { idToken, ...deviceInfo })
     .then((res) => {
       return res.data
     })

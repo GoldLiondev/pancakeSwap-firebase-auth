@@ -22,7 +22,7 @@ const Profile: React.FC = () => {
     <>
       <PageHeader>
         <Heading as="h1" scale="xxl" color="secondary">
-          {t('User List')}
+          {t('User Profile')}
         </Heading>
       </PageHeader>
       <Page>
